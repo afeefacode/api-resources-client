@@ -1,16 +1,22 @@
 {
   "name": "@afeefa/api-resources-client",
-  "version": "0.0.12",
+  "version": "0.0.15",
   "description": "",
-  "main": "index.js",
+  "module": "lib/es5/index.js",
+  "typings": "lib/types/index.d.ts",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "dev": "tsc --watch",
-    "build": "tsc"
+    "build": "rm -rf lib/ && tsc"
   },
   "author": "Afeefa Kollektiv <kollektiv@afeefa.de>",
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
+    "axios": "^0.21.1",
+    "tslib": "^2.1.0",
     "typescript": "^4.1.3"
   }
 }
