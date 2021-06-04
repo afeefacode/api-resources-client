@@ -1,6 +1,6 @@
 import { Api } from '../api/Api';
 import { ApiRequest } from '../api/ApiRequest';
-import { BaseQuerySource } from '../filter/BaseQuerySource';
+import { BaseFilterSource } from '../filter/BaseFilterSource';
 import { Filter, FilterJSON } from '../filter/Filter';
 import { RequestFilters } from '../filter/RequestFilters';
 import { Resource } from '../resource/Resource';
@@ -15,6 +15,7 @@ export declare type ActionJSON = {
         type: string;
     };
 };
+export declare type ActionFilters = Record<string, Filter>;
 export declare class Action {
     private _resource;
     private _name;
@@ -24,8 +25,8 @@ export declare class Action {
     private _filters;
     constructor(resource: Resource, name: string, json: ActionJSON);
     getName(): string;
-    getFilters(): Record<string, Filter>;
-    createRequestFilters(querySource?: BaseQuerySource): RequestFilters;
+    getFilters(): ActionFilters;
+    createRequestFilters(historyKey?: string, querySource?: BaseFilterSource): RequestFilters;
     request(): ApiRequest;
     getResource(): Resource;
     getApi(): Api;
