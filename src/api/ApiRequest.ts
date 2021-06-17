@@ -13,13 +13,13 @@ export type ApiRequestJSON = {
 
 export class ApiRequest {
   private _action!: Action
-  private _fields!: Record<string, unknown>
+  private _fields: Record<string, unknown> = {}
   private _filters!: Record<string, unknown>
   private _params!: Record<string, unknown>
   private _data!: Record<string, unknown>
 
-  private _lastRequestJSON: string = ''
-  private _lastRequest!: Promise<ApiResponse | boolean>
+  // private _lastRequestJSON: string = ''
+  // private _lastRequest!: Promise<ApiResponse | boolean>
 
   constructor (json?: ApiRequestJSON) {
     if (json) {
@@ -49,6 +49,11 @@ export class ApiRequest {
     return this
   }
 
+  public addField (name: string, value: unknown): ApiRequest {
+    this._fields[name] = value
+    return this
+  }
+
   public filters (filters: Record<string, unknown>): ApiRequest {
     this._filters = filters
     return this
@@ -67,15 +72,19 @@ export class ApiRequest {
   public send (): Promise<ApiResponse | boolean> {
     const params = this.serialize()
 
-    if (this._lastRequestJSON === JSON.stringify(params)) {
-      return this._lastRequest
+    // if (this._lastRequestJSON === JSON.stringify(params)) {
+    //   return this._lastRequest
+    // }
+
+    // this._lastRequestJSON = JSON.stringify(params)
+
+    const urlResourceName = this._action.getResource().getName().replace(/.+\./, '').replace(/Resource/, '')
+    let url = this._action.getApi().getBaseUrl() + '?' + urlResourceName + ':' + this._action.getName()
+    if (this._params && this._params.id) {
+      url += ':' + (this._params.id as string)
     }
 
-    this._lastRequestJSON = JSON.stringify(params)
-
-    const url = this._action.getApi().getBaseUrl() + '?' + this._action.getResource().getName() + ':' + this._action.getName()
-
-    const request = axios.post(url, params)
+    const axiosResponse = axios.post(url, params)
       .then(result => {
         return new ApiResponse(new ApiRequest(), result)
       })
@@ -84,8 +93,8 @@ export class ApiRequest {
         return false
       })
 
-    this._lastRequest = request
-    return request
+    // this._lastRequest = request
+    return axiosResponse
   }
 
   protected serialize (): object {
