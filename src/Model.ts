@@ -89,6 +89,7 @@ export class Model {
     const type: Type = apiResources.getType(this.type) as Type
     for (const name of Object.keys(type.getUpdateFields())) {
       if (!fields || fields[name]) {
+        // TODO clone relations too
         model[name] = this[name]
       }
     }
@@ -114,5 +115,13 @@ export class Model {
     }
 
     return json
+  }
+
+  public equals (model?: Model): boolean {
+    if (!model) {
+      return false
+    }
+
+    return model.type === this.type && model.id === this.id
   }
 }

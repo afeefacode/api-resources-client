@@ -6,7 +6,8 @@ import { Validator, ValidatorJSON } from '../validator/Validator'
 
 export type FieldJSON = {
   type: string
-  validator: ValidatorJSON,
+  validator: ValidatorJSON
+  options: Record<string, string>
   options_request: ApiRequestJSON
 }
 
@@ -26,6 +27,7 @@ export class Field {
 
   private _validator: Validator | null = null
 
+  private _options: Record<string, string> = {}
   private _optionsRequestFactory: RequestFactory = null
 
   constructor () {
@@ -51,6 +53,10 @@ export class Field {
       }
     }
 
+    if (json.options) {
+      field._options = json.options
+    }
+
     field.setupTypeFieldValidator(json.validator)
 
     return field
@@ -69,6 +75,14 @@ export class Field {
       return this._optionsRequestFactory()
     }
     return null
+  }
+
+  public hasOptions (): boolean {
+    return !!Object.keys(this._options).length
+  }
+
+  public getOptions (): Record<string, string> {
+    return this._options
   }
 
   public default (): FieldValue {
