@@ -66,7 +66,7 @@ export class Action {
   }
 
   public getFullName (): string {
-    return this.getResource().getName() + '.' + this._name
+    return this.getResource().getType() + '.' + this._name
   }
 
   public getResponse (): ActionResponse | null {
@@ -81,11 +81,11 @@ export class Action {
     return this._filters
   }
 
-  public createRequestFilters (historyKey?: string, querySource?: BaseFilterSource): RequestFilters {
-    return RequestFilters.create(this._filters, historyKey, querySource)
+  public createRequestFilters (historyKey?: string, filterSource?: BaseFilterSource): RequestFilters {
+    return RequestFilters.create(this._filters, historyKey, filterSource)
   }
 
-  public request (): ApiRequest {
+  public createRequest (): ApiRequest {
     return new ApiRequest()
       .action(this)
   }
