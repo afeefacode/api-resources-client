@@ -1,15 +1,19 @@
 import { Action } from '../action/Action'
 import { ApiRequest, ApiRequestJSON } from '../api/ApiRequest'
-import { QuerySource } from './BaseFilterSource'
-import { RequestFilters, UsedFilters } from './RequestFilters'
+import { BagEntries } from '../bag/Bag'
+import { RequestFilters } from './RequestFilters'
 
-export type FilterValueType = boolean | string | number | [string, FilterValueType] | null
+export type FilterValueType = (
+  boolean | string | number | null |
+  Record<string, boolean | string | number | null>
+)
 
 export type FilterJSON = {
   type: string
   default: FilterValueType
   options: []
   options_request: ApiRequestJSON
+  null_is_option: boolean
 }
 
 export type FilterParams = object
@@ -26,9 +30,10 @@ export class Filter {
   public name!: string
 
   private _action!: Action
-  private _defaultValue!: FilterValueType
-  private _value!: FilterValueType
-  public options: unknown[] = []
+  private _defaultValue: FilterValueType = null
+  private _nullIsOption: boolean = false
+  private _value: FilterValueType = null
+  private _options: unknown[] = []
   private _requestFactory: RequestFactory = null
   private _request: ApiRequest | null = null
 
@@ -50,6 +55,9 @@ export class Filter {
     return this._value
   }
 
+  /**
+   * Sets the filter value and dispatches a change event
+   */
   public set value (value: FilterValueType) {
     if (value !== this._value) {
       this._value = value
@@ -63,8 +71,31 @@ export class Filter {
     return this._defaultValue
   }
 
+  public hasOptions (): boolean {
+    return !!this._options.length
+  }
+
+  public hasOption (value: unknown): boolean {
+    return this._options.includes(value)
+  }
+
+  public get options (): unknown[] {
+    return this._options
+  }
+
+  public get nullIsOption (): boolean {
+    return this._nullIsOption
+  }
+
+  public hasRequest (): boolean {
+    return !!this._requestFactory
+  }
+
   public get request (): ApiRequest | null {
-    return this._request
+    if (this._requestFactory) {
+      return this._requestFactory()
+    }
+    return null
   }
 
   public createActionFilter (action: Action, name: string, json: FilterJSON): Filter {
@@ -79,13 +110,27 @@ export class Filter {
       }
     }
 
-    filter.init(action, name, json.default || null, json.options, requestFactory)
+    filter.init(
+      action,
+      name,
+      json.default || null,
+      json.options || [],
+      json.null_is_option || false,
+      requestFactory
+    )
     return filter
   }
 
   public createRequestFilter (requestFilters: RequestFilters): Filter {
     const filter = new (this.constructor as FilterConstructor)(requestFilters)
-    filter.init(this._action, this.name, this._defaultValue, this.options, this._requestFactory)
+    filter.init(
+      this._action,
+      this.name,
+      this._defaultValue,
+      this._options,
+      this._nullIsOption,
+      this._requestFactory
+    )
     if (filter._requestFactory) {
       filter._request = filter._requestFactory()
     }
@@ -93,32 +138,36 @@ export class Filter {
     return filter
   }
 
-  public initFromUsed (usedFilters: UsedFilters): void {
+  public initFromUsed (usedFilters: BagEntries<FilterValueType>): void {
     const usedFilter = usedFilters[this.name]
     if (usedFilter !== undefined) {
-      this.value = usedFilter
-    }
-  }
-
-  public initFromQuerySource (query: QuerySource): void {
-    const queryValue = query[this.name]
-    if (queryValue) {
-      this._value = this.queryToValue(queryValue) as FilterValueType
+      this._value = usedFilter
     } else {
       this.reset()
     }
   }
 
-  public toQuerySource (): QuerySource {
+  public initFromQuerySource (query: BagEntries<string>): void {
+    const queryValue = query[this.name]
+    if (queryValue) { // has query value, typeof === string
+      const value = this.queryToValue(queryValue) // query value valid
+      if (value !== undefined) {
+        this._value = value
+        return
+      }
+    }
+    this.reset() // reset to default
+  }
+
+  public toQuerySource (): BagEntries<string> {
     if (!this.hasDefaultValueSet()) {
-      const valueString = this.valueToQuery(this._value)
+      const valueString = this.valueToQuery(this._value) // value can be represented in query
       if (valueString) {
         return {
           [this.name]: valueString
         }
       }
     }
-
     return {}
   }
 
@@ -134,35 +183,55 @@ export class Filter {
     return false
   }
 
-  public serialize (): UsedFilters {
-    if (!this.hasDefaultValueSet()) {
-      const serialized = this.serializeValue(this._value)
-      if (serialized !== undefined) {
+  public serialize (): BagEntries<FilterValueType> {
+    if (!this.hasDefaultValueSet()) { // send only if no default
+      let useFilter = true
+      if (this._value === null) { // send null only if it's an option
+        useFilter = this._nullIsOption
+      }
+      if (useFilter) {
         return {
-          [this.name]: this._value
+          [this.name]: this.serializeValue(this._value)
         }
       }
     }
     return {}
   }
 
-  protected valueToQuery (_value: unknown): string | undefined {
+  /**
+   * Serializes a filter value into a stringified query value
+   */
+  public valueToQuery (_value: FilterValueType): string | undefined {
     return undefined
   }
 
-  protected queryToValue (_value: string): unknown | undefined {
+  /**
+   * Converts a stringified query value into a valid filter value
+   */
+  public queryToValue (_value: string): FilterValueType | undefined {
     return undefined
   }
 
-  protected serializeValue (value: unknown): unknown | undefined {
+  /**
+   * Converts a filter value into a serialized form to be used in api requests
+   */
+  public serializeValue (value: FilterValueType): FilterValueType {
     return value
   }
 
-  protected init (action: Action, name: string, defaultValue: FilterValueType, options: unknown[] = [], _requestFactory: RequestFactory): void {
+  protected init (
+    action: Action,
+    name: string,
+    defaultValue: FilterValueType,
+    options: unknown[],
+    nullIsOption: boolean,
+    _requestFactory: RequestFactory
+  ): void {
     this._action = action
     this.name = name
     this._defaultValue = defaultValue
-    this.options = options
+    this._options = options
+    this._nullIsOption = nullIsOption
     this._requestFactory = _requestFactory
   }
 }
