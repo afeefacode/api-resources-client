@@ -1,28 +1,28 @@
 import { ApiRequest } from '../api/ApiRequest'
 import { BagEntries } from '../bag/Bag'
-import { BaseFilterSource } from '../filter/BaseFilterSource'
-import { FilterValueType } from '../filter/Filter'
-import { FilterChangeEvent } from '../filter/FilterChangeEvent'
-import { filterHistory } from '../filter/FilterHistory'
+import { ActionFilterValueType } from '../filter/ActionFilter'
 import { PageFilter } from '../filter/filters/PageFilter'
 import { ListViewConfig } from './ListViewConfig'
 import { ListViewFilter } from './ListViewFilter'
 import { ListViewFilterBag } from './ListViewFilterBag'
+import { ListViewFilterChangeEvent } from './ListViewFilterChangeEvent'
+import { filterHistory } from './ListViewFilterHistory'
+import { ListViewFilterSource } from './ListViewFilterSource'
 
 export class ListViewModel {
   private _config: ListViewConfig
 
-  private _filterSource: BaseFilterSource | null = null
+  private _filterSource: ListViewFilterSource | null = null
   private _pushToFilterSource: boolean = false
 
   private _historyKey: string | null = null
   private _saveInHistory: boolean = false
-  private _usedFilters: BagEntries<FilterValueType> | null = null
+  private _usedFilters: BagEntries<ActionFilterValueType> | null = null
   private _usedFiltersCount: number = 0
   private _filters: ListViewFilterBag = new ListViewFilterBag()
 
   private _eventTarget: EventTarget = new EventTarget()
-  private _changedFilters: BagEntries<FilterValueType> = {}
+  private _changedFilters: BagEntries<ActionFilterValueType> = {}
   private _changedFiltersTimeout: number | null = null
   private _lastSavedQuery: BagEntries<string> | null = null
 
@@ -69,13 +69,13 @@ export class ListViewModel {
     return this
   }
 
-  public filterSource (filterSource: BaseFilterSource, pushToFilterSource: boolean): ListViewModel {
+  public filterSource (filterSource: ListViewFilterSource, pushToFilterSource: boolean): ListViewModel {
     this._filterSource = filterSource
     this._pushToFilterSource = pushToFilterSource
     return this
   }
 
-  public getFilterSource (): BaseFilterSource | null {
+  public getFilterSource (): ListViewFilterSource | null {
     return this._filterSource
   }
 
@@ -89,13 +89,13 @@ export class ListViewModel {
     return this._historyKey
   }
 
-  public usedFilters (usedFilters: BagEntries<FilterValueType> | null, count: number): ListViewModel {
+  public usedFilters (usedFilters: BagEntries<ActionFilterValueType> | null, count: number): ListViewModel {
     this._usedFilters = usedFilters
     this._usedFiltersCount = count
     return this
   }
 
-  public getUsedFilters (): BagEntries<FilterValueType> | null {
+  public getUsedFilters (): BagEntries<ActionFilterValueType> | null {
     return this._usedFilters
   }
 
@@ -174,9 +174,14 @@ export class ListViewModel {
     if (Object.keys(changedFilters).length) {
       this.dispatchChange(changedFilters)
     }
+
+    // if a link without query is clicked,
+    // and custom fiters apply, then this should
+    // be set to the query string
+    this.pushToFilterSource()
   }
 
-  public initFromUsedFilters (usedFilters: BagEntries<FilterValueType>, count: number): void {
+  public initFromUsedFilters (usedFilters: BagEntries<ActionFilterValueType>, count: number): void {
     this.setFilterValues(usedFilters)
 
     this.handleFilterHistory(count)
@@ -185,7 +190,7 @@ export class ListViewModel {
   }
 
   public resetFilters (): void {
-    const changedFilters: BagEntries<FilterValueType> = {}
+    const changedFilters: BagEntries<ActionFilterValueType> = {}
     this._filters.values().forEach(f => {
       const changed = f.reset()
       if (changed) {
@@ -213,15 +218,15 @@ export class ListViewModel {
     }
   }
 
-  private dispatchChange (changedFilters: BagEntries<FilterValueType>): void {
-    this._eventTarget.dispatchEvent(new FilterChangeEvent('change', changedFilters))
+  private dispatchChange (changedFilters: BagEntries<ActionFilterValueType>): void {
+    this._eventTarget.dispatchEvent(new ListViewFilterChangeEvent('change', changedFilters))
   }
 
   private initFilterValues (
     {source, history, used, filters}:
     {source: boolean, history: boolean, used: boolean, filters: boolean}
-  ): BagEntries<FilterValueType> {
-    let filtersToUse: BagEntries<FilterValueType> = {}
+  ): BagEntries<ActionFilterValueType> {
+    let filtersToUse: BagEntries<ActionFilterValueType> = {}
 
     // check used filters
     if (used) {
@@ -256,8 +261,8 @@ export class ListViewModel {
     return this.setFilterValues(filtersToUse)
   }
 
-  private setFilterValues (filters: BagEntries<FilterValueType>): BagEntries<FilterValueType> {
-    const changedFilters: BagEntries<FilterValueType> = {}
+  private setFilterValues (filters: BagEntries<ActionFilterValueType>): BagEntries<ActionFilterValueType> {
+    const changedFilters: BagEntries<ActionFilterValueType> = {}
 
     // reset all filters not used
     for (const filter of this._filters.values()) {
@@ -283,8 +288,8 @@ export class ListViewModel {
     return changedFilters
   }
 
-  private getFiltersFromFilterSource (): BagEntries<FilterValueType> {
-    const filters: BagEntries<FilterValueType> = {}
+  private getFiltersFromFilterSource (): BagEntries<ActionFilterValueType> {
+    const filters: BagEntries<ActionFilterValueType> = {}
     const query = this._filterSource!.getQuery()
 
     for (const [name, filter] of this._filters.entries()) {
@@ -299,7 +304,7 @@ export class ListViewModel {
     return filters
   }
 
-  private getFiltersFromHistory (): BagEntries<FilterValueType> {
+  private getFiltersFromHistory (): BagEntries<ActionFilterValueType> {
     if (this._historyKey) {
       if (filterHistory.hasFilters(this._historyKey)) {
         const filters = filterHistory.getFilters(this._historyKey)

@@ -1,9 +1,9 @@
 import { ApiRequest } from '../api/ApiRequest';
 import { BagEntries } from '../bag/Bag';
-import { BaseFilterSource } from '../filter/BaseFilterSource';
-import { FilterValueType } from '../filter/Filter';
+import { ActionFilterValueType } from '../filter/ActionFilter';
 import { ListViewConfig } from './ListViewConfig';
 import { ListViewFilterBag } from './ListViewFilterBag';
+import { ListViewFilterSource } from './ListViewFilterSource';
 export declare class ListViewModel {
     private _config;
     private _filterSource;
@@ -24,12 +24,12 @@ export declare class ListViewModel {
         history: boolean;
         used: boolean;
     }): ListViewModel;
-    filterSource(filterSource: BaseFilterSource, pushToFilterSource: boolean): ListViewModel;
-    getFilterSource(): BaseFilterSource | null;
+    filterSource(filterSource: ListViewFilterSource, pushToFilterSource: boolean): ListViewModel;
+    getFilterSource(): ListViewFilterSource | null;
     historyKey(historyKey: string, saveInHistory: boolean): ListViewModel;
     getHistoryKey(): string | null;
-    usedFilters(usedFilters: BagEntries<FilterValueType> | null, count: number): ListViewModel;
-    getUsedFilters(): BagEntries<FilterValueType> | null;
+    usedFilters(usedFilters: BagEntries<ActionFilterValueType> | null, count: number): ListViewModel;
+    getUsedFilters(): BagEntries<ActionFilterValueType> | null;
     getFilters(): ListViewFilterBag;
     on(type: string, handler: () => {}): ListViewModel;
     off(type: string, handler: () => {}): ListViewModel;
@@ -40,7 +40,7 @@ export declare class ListViewModel {
      * be reinitialized
      */
     filterSourceChanged(): void;
-    initFromUsedFilters(usedFilters: BagEntries<FilterValueType>, count: number): void;
+    initFromUsedFilters(usedFilters: BagEntries<ActionFilterValueType>, count: number): void;
     resetFilters(): void;
     private handleFilterHistory;
     private dispatchChange;

@@ -2,10 +2,8 @@ import { Api } from '../api/Api'
 import { ApiRequest } from '../api/ApiRequest'
 import { BatchApiRequest } from '../api/BatchApiRequest'
 import { apiResources } from '../ApiResources'
-import { BaseFilterSource } from '../filter/BaseFilterSource'
-import { FilterJSON } from '../filter/Filter'
-import { FilterBag } from '../filter/FilterBag'
-import { RequestFilters } from '../filter/RequestFilters'
+import { ActionFilterJSON } from '../filter/ActionFilter'
+import { ActionFilterBag } from '../filter/ActionFilterBag'
 import { Resource } from '../resource/Resource'
 import { ActionInput } from './ActionInput'
 import { ActionParam, ActionParamJSON } from './ActionParams'
@@ -13,7 +11,7 @@ import { ActionResponse } from './ActionResponse'
 
 export type ActionJSON = {
   params: Record<string, ActionParamJSON>
-  filters: Record<string, FilterJSON>
+  filters: Record<string, ActionFilterJSON>
   input: {
     type: string
   }
@@ -28,7 +26,7 @@ export class Action {
   private _response: ActionResponse | null = null
   private _params: Record<string, ActionParam> = {}
   private _input: ActionInput | null = null
-  private _filters: FilterBag = new FilterBag()
+  private _filters: ActionFilterBag = new ActionFilterBag()
 
   constructor (resource: Resource, name: string, json: ActionJSON) {
     this._resource = resource
@@ -50,10 +48,10 @@ export class Action {
     }
 
     if (json.filters) {
-      for (const [name, filterJSON] of Object.entries(json.filters)) {
-        const filter = apiResources.getFilter(filterJSON.type)
+      for (const [name, actionFilterJSON] of Object.entries(json.filters)) {
+        const filter = apiResources.getFilter(actionFilterJSON.type)
         if (filter) {
-          const actionFilter = filter.createActionFilter(this, name, filterJSON)
+          const actionFilter = filter.createActionFilter(this, name, actionFilterJSON)
           this._filters.add(name, actionFilter)
         }
       }
@@ -76,12 +74,8 @@ export class Action {
     return this._input
   }
 
-  public getFilters (): FilterBag {
+  public getFilters (): ActionFilterBag {
     return this._filters
-  }
-
-  public createRequestFilters (historyKey?: string, filterSource?: BaseFilterSource): RequestFilters {
-    return RequestFilters.create(this._filters, historyKey, filterSource)
   }
 
   public createRequest (): ApiRequest {
