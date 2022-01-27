@@ -1,14 +1,10 @@
+import { Relation } from '../Relation';
 import { BooleanAttribute } from './BooleanAttribute';
 import { DateAttribute } from './DateAttribute';
 import { EnumAttribute } from './EnumAttribute';
-import { HasManyRelation } from './HasManyRelation';
-import { HasOneRelation } from './HasOneRelation';
 import { IdAttribute } from './IdAttribute';
 import { IntAttribute } from './IntAttribute';
-import { LinkManyRelation } from './LinkManyRelation';
-import { LinkOneRelation } from './LinkOneRelation';
 import { NumberAttribute } from './NumberAttribute';
-import { TextAttribute } from './TextAttribute';
-import { VarcharAttribute } from './VarcharAttribute';
-export declare const fields: (BooleanAttribute | DateAttribute | EnumAttribute | HasManyRelation | HasOneRelation | IdAttribute | IntAttribute | LinkManyRelation | LinkOneRelation | NumberAttribute | TextAttribute | VarcharAttribute)[];
+import { StringAttribute } from './StringAttribute';
+export declare const fields: (Relation | BooleanAttribute | DateAttribute | EnumAttribute | IdAttribute | IntAttribute | NumberAttribute | StringAttribute)[];
 //# sourceMappingURL=index.d.ts.map
