@@ -1,6 +1,6 @@
 {
   "name": "@afeefa/api-resources-client",
-  "version": "0.0.74",
+  "version": "0.0.75",
   "description": "",
   "module": "lib/es5/index.js",
   "typings": "lib/types/index.d.ts",
@@ -15,8 +15,8 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "axios": "^0.24.0",
+    "axios": "^0.26.0",
     "tslib": "^2.3.1",
-    "typescript": "^4.4.4"
+    "typescript": "^4.6.2"
   }
 }
