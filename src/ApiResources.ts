@@ -66,8 +66,11 @@ class ApiResources {
     return this
   }
 
-  public getApi (type: string): Api | null {
-    return this._apis[type] || null
+  public getApi (type: string | null = this._defaultApiType): Api | null {
+    if (type) {
+      return this._apis[type] || null
+    }
+    return null
   }
 
   public hasApi (type: string): boolean {
@@ -75,13 +78,13 @@ class ApiResources {
   }
 
   public createRequest (
-    {api: apiType = null, resource: resourceType, action: actionName}:
-    {api: string | null, resource: string, action: string}
+    {apiType = null, resourceType, actionName}:
+    {apiType: string | null, resourceType: string, actionName: string}
   ): ApiRequest | null {
     const action = this.getAction({
-      api: apiType,
-      resource: resourceType,
-      action: actionName
+      apiType,
+      resourceType,
+      actionName
     })
     if (action) {
       return action.createRequest()
@@ -90,8 +93,8 @@ class ApiResources {
   }
 
   public getAction (
-    {api: apiType = null, resource: resourceType, action: actionName}:
-    {api: string | null, resource: string, action: string}
+    {apiType = null, resourceType, actionName}:
+    {apiType: string | null, resourceType: string, actionName: string}
   ): Action | null {
     apiType = apiType || this._defaultApiType
 

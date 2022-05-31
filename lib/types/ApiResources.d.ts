@@ -21,17 +21,17 @@ declare class ApiResources {
     registerApi(type: string, baseUrl: string): ApiResources;
     registerApis(apis: Record<string, string>): ApiResources;
     defaultApi(type: string): ApiResources;
-    getApi(type: string): Api | null;
+    getApi(type?: string | null): Api | null;
     hasApi(type: string): boolean;
-    createRequest({ api: apiType, resource: resourceType, action: actionName }: {
-        api: string | null;
-        resource: string;
-        action: string;
+    createRequest({ apiType, resourceType, actionName }: {
+        apiType: string | null;
+        resourceType: string;
+        actionName: string;
     }): ApiRequest | null;
-    getAction({ api: apiType, resource: resourceType, action: actionName }: {
-        api: string | null;
-        resource: string;
-        action: string;
+    getAction({ apiType, resourceType, actionName }: {
+        apiType: string | null;
+        resourceType: string;
+        actionName: string;
     }): Action | null;
     registerField(field: Field): ApiResources;
     registerFields(fields: Field[]): ApiResources;
