@@ -1,5 +1,4 @@
-import { ApiAction } from 'src/api/ApiAction'
-
+import { ApiAction } from '../api/ApiAction'
 import { ApiRequest } from '../api/ApiRequest'
 import { BagEntries } from '../bag/Bag'
 import { ActionFilterValueType } from '../filter/ActionFilter'
@@ -222,7 +221,7 @@ export class ListViewModel {
       return
     }
 
-    this._changedFiltersTimeout = setTimeout(() => {
+    this._changedFiltersTimeout = window.setTimeout(() => {
       clearTimeout(this._changedFiltersTimeout!)
       this._changedFiltersTimeout = null
 
