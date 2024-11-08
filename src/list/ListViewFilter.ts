@@ -117,4 +117,12 @@ export class ListViewFilter {
   public serializeValue (value: ActionFilterValueType): ActionFilterValueType {
     return this._filter.serializeValue(value)
   }
+
+  /**
+   * Converts a given serialized value into a filter value
+   * E.g.: 2024-11-07T23:00:00.000000Z -> Date
+   */
+  public deserializeDefaultValue (value: ActionFilterValueType): ActionFilterValueType {
+    return this._filter.deserializeDefaultValue(value)
+  }
 }
