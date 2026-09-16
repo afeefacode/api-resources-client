@@ -1,8 +1,17 @@
 {
   "name": "@afeefa/api-resources-client",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "",
+  "type": "module",
   "module": "lib/es5/index.js",
+  "main": "lib/es5/index.js",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/es5/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "typings": "lib/types/index.d.ts",
   "files": [
     "lib"
